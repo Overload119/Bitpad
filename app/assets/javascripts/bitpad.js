@@ -141,28 +141,14 @@
 
       var that = this;
       this._data.start = function() {
-        requestAnimationFrame(that._data.start);
+        that._data.animHandle = requestAnimationFrame(that._data.start);
         render();
       }
       this._data.start();
 
     },
 
-    _resize: function() {
-      var canvas = this.element;
-      var options = this.options;
-      var context = canvas[0].getContext('2d');
-      var frameWidth = canvas.attr('width'),
-          frameHeight = canvas.attr('height');
-
-      // Adjust the size of the canvas to fit all pixels
-      var pixelSize = this._data.pixelSize = Math.floor(frameWidth / options.columns);
-      this._data.frameWidth = frameWidth = pixelSize * options.columns;
-      this._data.frameHeight = frameHeight = pixelSize * options.rows;
-      canvas.attr('width', frameWidth);
-      canvas.attr('height', frameWidth);
-
-      // Sets up the pixel grid
+    clear: function() {
       this._data.grid = [];
       for(var i = 0; i<options.columns; i++) {
         this._data.grid[i] = [];
@@ -172,6 +158,30 @@
       }
     },
 
+    resize: function() {
+      var canvas = this.element;
+      var options = this.options;
+      var context = canvas[0].getContext('2d');
+      var frameWidth = canvas.attr('width'),
+          frameHeight = canvas.attr('height');
+
+      // Adjust the size of the canvas to fit all pixels
+      if(frameWidth < frameHeight) {
+        var pixelSize = this._data.pixelSize = Math.floor(frameWidth / options.columns);
+      } else {
+        var pixelSize = this._data.pixelSize = Math.floor(frameHeight / options.rows);
+      }
+
+      this._data.frameWidth = frameWidth = pixelSize * options.columns;
+      this._data.frameHeight = frameHeight = pixelSize * options.rows;
+      canvas.attr('width', frameWidth);
+      canvas.attr('height', frameHeight);
+
+      // Restart rendering
+      cancelAnimationFrame(this._data.animHandle);
+      this._start();
+    },
+
     _create: function() {
       var canvas = this.element;
       var options = this.options;
@@ -179,7 +189,16 @@
 
       canvas.attr('oncontextmenu', 'return false');
 
-      this._resize();
+      // Sets up the pixel grid
+      this._data.grid = [];
+      for(var i = 0; i<options.columns; i++) {
+        this._data.grid[i] = [];
+        for(var k = 0; k<options.rows; k++) {
+          this._data.grid[i][k] = 0;
+        }
+      }
+
+      this.resize();
       this._bindEvents();
       this._start();
     },
