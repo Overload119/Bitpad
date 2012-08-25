@@ -11,3 +11,19 @@
  *= require_self
  *= require_tree .
 */
+
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  font-family: 'Courier New';
+  color: #333;
+  background-color: #fff;
+}
+
+.content_container {
+  min-width: 910px;
+  width: 80%;
+  margin: 0 auto;
+  background-color: #FCFCFC;  
+}
