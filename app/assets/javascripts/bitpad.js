@@ -91,6 +91,8 @@
 
       canvas.mouseleave(function(event) {
         that._data.drawType = 'none';
+        that._data.mouseX = -1;
+        that._data.mouseY = -1;
       });
   
     },
@@ -150,12 +152,15 @@
 
     clear: function() {
       this._data.grid = [];
-      for(var i = 0; i<options.columns; i++) {
+      for(var i = 0; i<this.options.columns; i++) {
         this._data.grid[i] = [];
-        for(var k = 0; k<options.rows; k++) {
+        for(var k = 0; k<this.options.rows; k++) {
           this._data.grid[i][k] = 0;
         }
       }
+      // Restart rendering
+      cancelAnimationFrame(this._data.animHandle);
+      this._start();
     },
 
     resize: function() {

@@ -2,14 +2,20 @@
   <%= javascript_include_tag 'views/editor' %>
 <% end %>
 
+<div class="overlay">
+  <img alt="preview" src="">
+</div>
+
 <div class="instructions">
-  Left-click to fill in a pixel.
-  Right-click to erase.
+  Left-click to fill in a pixel.<br>
+  Right-click to erase.<br>
+  Create multiple frames<br>
+  Hit Preview to play back the frames
 </div>
 
 <div class="main_editor">
   <div class="prev">
-    <img src="" alt="Previous frame">
+    <img border="0" src="" alt="Previous frame">
   </div>
 
   <div class="current">
@@ -17,8 +23,13 @@
   </div>
 
   <div class="next">
-    <a>Create Next Frame</a>
+    <a id="new">New Frame</a>
+    <a id="copy">Copy Frame</a>
   </div>
+</div>
+
+<div class="preview_button">
+  Preview Your Animation
 </div>
 
 <div class="instructions">
