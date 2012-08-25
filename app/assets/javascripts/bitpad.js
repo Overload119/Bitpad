@@ -7,6 +7,8 @@
 
 */
 
+// TODO: This should rely on pixelsize not rows/columns --> those should be based off the pixel size and canvas dimensions
+
 // animationFrame polyfill Erik Möller @http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating
 (function() {
     var lastTime = 0;
@@ -33,7 +35,7 @@
         };
 }());
 
-(function($) {
+(function($, undefined) {
   var NUMPIXELS = 12;
   var KEYMAP = "0123456789qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM~*"; // 6
 
@@ -46,7 +48,7 @@
     if(options) {
       $.extend(settings, options);
     }
-    
+
     BitPad(this, settings);
     return this;
   }
@@ -75,15 +77,16 @@
     }
 
     function getGridCell(x, y) {
-      if(x < 0 ) x = 0;
-      else if(x > frameWidth) x = frameWidth;
+      var gridX = Math.floor(x / pixelSize);
+      var gridY = Math.floor(y / pixelSize);
 
-      if(y < 0) y = 0;
-      else if(y > frameHeight) y = frameHeight;
-      
+      if( gridX >= grid.length || gridY >= grid[0].length) {
+        return false;
+      }
+
       return {
-        x: Math.floor(x / pixelSize),
-        y: Math.floor(y / pixelSize)
+        x: gridX,
+        y: gridY
       };
     }
 
@@ -125,15 +128,16 @@
 
       // Draw outline
       var cell = getGridCell(mouseX, mouseY);
-      context.strokeRect(pixelSize * cell.x, pixelSize * cell.y, pixelSize, pixelSize);
+      if(cell) {
+        context.strokeRect(pixelSize * cell.x, pixelSize * cell.y, pixelSize, pixelSize);
 
-      if(draw_type === 'draw') {
-        grid[cell.x][cell.y] = 1;
+        if(draw_type === 'draw') {
+          grid[cell.x][cell.y] = 1;
+        }
+        else if(draw_type === 'erase') {
+          grid[cell.x][cell.y] = 0;
+        }
       }
-      else if(draw_type === 'erase') {
-        grid[cell.x][cell.y] = 0;
-      }
-
     }
 
     function start() {
@@ -142,7 +146,6 @@
     }
 
     start();
-
   }
 
 })(jQuery);
