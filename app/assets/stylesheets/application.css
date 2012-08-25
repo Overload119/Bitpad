@@ -27,3 +27,7 @@ body {
   margin: 0 auto;
   background-color: #FCFCFC;  
 }
+
+canvas {
+  border: 1px solid #666;
+}
