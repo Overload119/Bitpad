@@ -7,8 +7,6 @@
 
 */
 
-// TODO: This should rely on pixelsize not rows/columns --> those should be based off the pixel size and canvas dimensions
-
 // animationFrame polyfill Erik Möller @http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating
 (function() {
     var lastTime = 0;
@@ -37,50 +35,28 @@
 
 (function($, undefined) {
   var NUMPIXELS = 12;
-  var KEYMAP = "0123456789qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM~*"; // 6
+  var KEYMAP = "0123456789qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM~*"; // 6  
 
-  $.fn.bitpad = function(options) {
-    var settings = {
-      columns: NUMPIXELS,
-      rows: NUMPIXELS
-    };
+  $.widget('ui.bitpad', {
 
-    if(options) {
-      $.extend(settings, options);
-    }
+    options: {
+      rows: NUMPIXELS,
+      columns: NUMPIXELS
+    },
 
-    BitPad(this, settings);
-    return this;
-  }
+    _data: {
+      drawType: 0,
+      mouseX: 0,
+      mouseY: 0,
+      grid: undefined,
+      pixelSize: 0
+    },
 
-  var BitPad = function(canvas, settings) {
-    var mouseX = -1, 
-        mouseY = -1,
-        frameWidth = canvas.attr('width'),
-        frameHeight = canvas.attr('height'),
-        context = canvas[0].getContext('2d');
+    _getGridCell: function(x, y) {
+      var gridX = Math.floor(x / this._data.pixelSize);
+      var gridY = Math.floor(y / this._data.pixelSize);
 
-    // Adjust the size of the canvas to fit our needs
-    var pixelSize = Math.floor(frameWidth / NUMPIXELS);
-    frameWidth = pixelSize * settings.columns;
-    frameHeight = pixelSize * settings.rows;
-    canvas.attr('width', frameWidth);
-    canvas.attr('height', frameWidth);
-
-    // Sets up the pixel grid
-    var grid = [];
-    for(var i = 0; i<settings.columns; i++) {
-      grid[i] = [];
-      for(var k = 0; k<settings.rows; k++) {
-        grid[i][k] = 0;
-      }
-    }
-
-    function getGridCell(x, y) {
-      var gridX = Math.floor(x / pixelSize);
-      var gridY = Math.floor(y / pixelSize);
-
-      if( gridX >= grid.length || gridY >= grid[0].length) {
+      if( gridX >= this._data.grid.length || gridY >= this._data.grid[0].length) {
         return false;
       }
 
@@ -88,64 +64,123 @@
         x: gridX,
         y: gridY
       };
-    }
+    },
 
-    canvas.mousemove(function(event) {
-      var x = event.pageX - canvas.offset().left;
-      var y = event.pageY - canvas.offset().top;
-      mouseX = x;
-      mouseY = y;
-    });
+    _bindEvents: function() {
+      var canvas = this.element;
+      var that = this;
 
-    var draw_type = 'none';
-    canvas.mousedown(function(event) {
-      var mouseType = event.which;
-      
-      if(mouseType === 3) {
-        draw_type = 'erase';
-      } else {
-        draw_type = 'draw';
-      }
-    });
-    canvas.mouseup(function(event) {
-      draw_type = 'none';
-    });    
-    canvas.attr('oncontextmenu', 'return false');
+      canvas.mousemove(function(event) {
+        var x = event.pageX - canvas.offset().left;
+        var y = event.pageY - canvas.offset().top;
+        that._data.mouseX = x;
+        that._data.mouseY = y;
+      });
 
-    function render() {
-      // Blank canvas
-      context.clearRect(0, 0, frameWidth, frameHeight);
-      context.strokeStyle = "#777";
+      canvas.mousedown(function(event) {
+        var mouseType = event.which;          
+        if(mouseType === 3) {
+          that._data.drawType = 'erase';
+        } else {
+          that._data.drawType = 'draw';
+        }
+      });
 
-      // Paint the grid
-      for(var i = 0; i<settings.columns; i++) {
-        for(var k = 0; k<settings.rows; k++) {
-          if(grid[i][k] === 1) {
-            context.fillRect(i*pixelSize, k*pixelSize, pixelSize, pixelSize);
+      canvas.mouseup(function(event) {
+        that._data.drawType = 'none';
+      });
+  
+    },
+
+    _start: function() {
+      var canvas = this.element;
+      var context = canvas[0].getContext('2d');
+      var grid = this._data.grid;
+
+      var frameWidth  = this._data.frameWidth,
+          frameHeight = this._data.frameHeight,
+          columns     = this.options.columns,
+          rows        = this.options.rows,
+          pixelSize   = this._data.pixelSize,
+          data        = this._data,
+          that        = this;
+
+
+      var render = function() {
+        // Blank canvas
+        context.clearRect(0, 0, frameWidth, frameHeight);
+        context.strokeStyle = "#777";
+
+        // Paint the grid
+        for(var i = 0; i < columns; i++) {
+          for(var k = 0; k < rows; k++) {
+            if(grid[i][k] === 1) {
+              context.fillRect(i*pixelSize, k*pixelSize, pixelSize, pixelSize);
+            }
+          }
+        }
+
+        // Draw grid outline and paint
+        var cell = that._getGridCell(data.mouseX, data.mouseY);
+        if(cell) {
+          context.strokeRect(pixelSize * cell.x, pixelSize * cell.y, pixelSize, pixelSize);
+
+          if(data.drawType === 'draw') {
+            grid[cell.x][cell.y] = 1;
+          }
+          else if(data.drawType === 'erase') {
+            grid[cell.x][cell.y] = 0;
           }
         }
       }
 
-      // Draw outline
-      var cell = getGridCell(mouseX, mouseY);
-      if(cell) {
-        context.strokeRect(pixelSize * cell.x, pixelSize * cell.y, pixelSize, pixelSize);
+      var that = this;
+      this._data.start = function() {
+        requestAnimationFrame(that._data.start);
+        render();
+      }
+      this._data.start();
 
-        if(draw_type === 'draw') {
-          grid[cell.x][cell.y] = 1;
-        }
-        else if(draw_type === 'erase') {
-          grid[cell.x][cell.y] = 0;
+    },
+
+    _resize: function() {
+      var canvas = this.element;
+      var options = this.options;
+      var context = canvas[0].getContext('2d');
+      var frameWidth = canvas.attr('width'),
+          frameHeight = canvas.attr('height');
+
+      // Adjust the size of the canvas to fit all pixels
+      var pixelSize = this._data.pixelSize = Math.floor(frameWidth / options.columns);
+      this._data.frameWidth = frameWidth = pixelSize * options.columns;
+      this._data.frameHeight = frameHeight = pixelSize * options.rows;
+      canvas.attr('width', frameWidth);
+      canvas.attr('height', frameWidth);
+
+      // Sets up the pixel grid
+      this._data.grid = [];
+      for(var i = 0; i<options.columns; i++) {
+        this._data.grid[i] = [];
+        for(var k = 0; k<options.rows; k++) {
+          this._data.grid[i][k] = 0;
         }
       }
+    },
+
+    _create: function() {
+      var canvas = this.element;
+      var options = this.options;
+      var context = canvas[0].getContext('2d');
+
+      canvas.attr('oncontextmenu', 'return false');
+
+      this._resize();
+      this._bindEvents();
+      this._start();
+    },
+
+    save: function() {
+      return this.element[0].toDataURL("image/png");
     }
-
-    function start() {
-      requestAnimationFrame(start);
-      render();
-    }
-
-    start();
-  }
-
+  });
 })(jQuery);
