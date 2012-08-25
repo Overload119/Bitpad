@@ -1,5 +1,22 @@
-<canvas id="test" width="400" height="500"></canvas>
+<%= content_for :head do %>
+  <%= javascript_include_tag 'views/editor' %>
+<% end %>
 
-<script type="text/javascript">
-  $('#test').bitpad();
-</script>
+<div class="instructions">
+  Left-click to fill in a pixel.
+  Right-click to erase.
+</div>
+
+<div class="main_editor">
+  <div class="prev">
+    <img src="" alt="Previous frame">
+  </div>
+
+  <div class="current">
+    <canvas id="editor" width="10" height="10"></canvas>
+  </div>
+
+  <div class="next">
+    <a>Create Next Frame</a>
+  </div>
+<div>

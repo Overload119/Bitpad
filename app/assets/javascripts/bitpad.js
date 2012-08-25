@@ -35,7 +35,6 @@
 
 (function($, undefined) {
   var NUMPIXELS = 12;
-  var KEYMAP = "0123456789qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM~*"; // 6  
 
   $.widget('ui.bitpad', {
 
@@ -89,6 +88,10 @@
       canvas.mouseup(function(event) {
         that._data.drawType = 'none';
       });
+
+      canvas.mouseleave(function(event) {
+        that._data.drawType = 'none';
+      });
   
     },
 
@@ -108,7 +111,9 @@
 
       var render = function() {
         // Blank canvas
-        context.clearRect(0, 0, frameWidth, frameHeight);
+        context.fillStyle = "#fff";
+        context.fillRect(0, 0, frameWidth, frameHeight);
+        context.fillStyle = "#222";
         context.strokeStyle = "#777";
 
         // Paint the grid
