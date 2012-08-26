@@ -1,0 +1,29 @@
+<%= content_for :head do %>
+  <%= javascript_include_tag 'views/demo' %>
+<% end %>
+
+<div class="left_container">
+  <canvas id="bitpad"></canvas>
+</div>
+
+<div class="right_container">
+  <h3>Customize BitPad Options</h3>
+  <input id="col" type="text" value="12" style="width: 30px"/>&nbspColumns
+  <br>
+  <input id="row" type="text" value="10" style="width: 30px"/>&nbspRows
+  <br>
+  <input id="scale" type="text" value="1.0" style="width: 50px"/>&nbspScale 
+  <br><br>
+
+  <a id="update" href="javascript:void(0)">Update BitPad</a>
+  <br><br>
+
+  <a id="load" href="javascript:void(0)">Load BitPad</a>
+  <br><br>
+  <a id="save" href="javascript:void(0)">Save BitPad</a>
+  <br>
+  <textarea class="save_code" spellcheck="false" readonly="true" style="width: 100%; resize: none; outline: none; min-height: 200px; display: none;"></textarea>
+
+
+</div>
+

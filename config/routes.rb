@@ -57,4 +57,5 @@ Bitpad::Application.routes.draw do
   # match ':controller(/:action(/:id))(.:format)'
   root :to => 'home#index'
   match '/editor' => 'home#editor'
+  match '/demo' => 'home#demo'
 end

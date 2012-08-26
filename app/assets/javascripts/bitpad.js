@@ -34,13 +34,56 @@
 }());
 
 (function($, undefined) {
-  var NUMPIXELS = 12;
+  var ENCODE_MAP = {
+    '\\]\\]':'N',
+    '\\[\\[':'M',
+    '\\],\\[':'L',
+    '0,0,0,0':'A',
+    '0,0,0,1':'B',
+    '0,0,1,0':'C',
+    '0,0,1,1':'D',
+    '0,1,0,0':'E',
+    '0,1,0,1':'F',
+    '0,1,1,0':'G',
+    '0,1,1,1':'H',
+    '1,0,0,0':'I',
+    '1,0,0,1':'J',
+    '1,0,1,0':'K',
+    '1,0,1,1':'a',
+    '1,1,0,0':'b',
+    '1,1,0,1':'c',
+    '1,1,1,0':'d',
+    '1,1,1,1':'e',
+    ',':'f'
+  };
+  var DECODE_MAP = {
+    'f':',',
+    'e':'1,1,1,1',
+    'd':'1,1,1,0',
+    'c':'1,1,0,1',
+    'b':'1,1,0,0',
+    'a':'1,0,1,1',
+    'K':'1,0,1,0',
+    'J':'1,0,0,1',
+    'I':'1,0,0,0',
+    'H':'0,1,1,1',
+    'G':'0,1,1,0',
+    'F':'0,1,0,1',
+    'E':'0,1,0,0',
+    'D':'0,0,1,1',
+    'C':'0,0,1,0',
+    'B':'0,0,0,1',
+    'A':'0,0,0,0',
+    'L':'],[',
+    'M':'[[',
+    'N':']]'
+  };
 
   $.widget('ui.bitpad', {
 
     options: {
-      rows: NUMPIXELS,
-      columns: NUMPIXELS
+      rows: 12,
+      columns: 12
     },
 
     _data: {
@@ -95,6 +138,25 @@
         that._data.mouseY = -1;
       });
   
+    },
+
+    _init: function() {
+      var canvas = this.element;
+      var options = this.options;
+      var context = canvas[0].getContext('2d');
+
+      // Sets up the pixel grid
+      this._data.grid = [];
+      for(var i = 0; i<options.columns; i++) {
+        this._data.grid[i] = [];
+        for(var k = 0; k<options.rows; k++) {
+          this._data.grid[i][k] = 0;
+        }
+      }
+
+      this.resize();
+      this._bindEvents();
+      this._start();
     },
 
     _start: function() {
@@ -193,23 +255,40 @@
       var context = canvas[0].getContext('2d');
 
       canvas.attr('oncontextmenu', 'return false');
-
-      // Sets up the pixel grid
-      this._data.grid = [];
-      for(var i = 0; i<options.columns; i++) {
-        this._data.grid[i] = [];
-        for(var k = 0; k<options.rows; k++) {
-          this._data.grid[i][k] = 0;
-        }
-      }
-
-      this.resize();
-      this._bindEvents();
-      this._start();
     },
 
     save: function() {
       return this.element[0].toDataURL("image/png");
+    },
+
+    saveCode: function() {
+      var rawJSON = JSON.stringify(this._data.grid);
+      var saveCode = rawJSON;
+      for(var k in ENCODE_MAP) {
+        var regExp = new RegExp(k, 'g');
+        saveCode = saveCode.replace(regExp, ENCODE_MAP[k]); 
+      }
+      return saveCode;
+    },
+
+    loadCode: function(loadCode) {
+      this.clear();
+
+      var json = loadCode;
+      for(var k in DECODE_MAP) {
+        var regExp = new RegExp(k, 'g');
+        json = json.replace(regExp, DECODE_MAP[k]); 
+      }
+
+      var loadGrid = JSON.parse(json);
+      if( loadGrid.length !== this.options.columns && loadGrid[0].length !== this.options.rows) {
+        throw Error('BitPad: Not a valid load code. Expected Col:['+this.options.columns+'] Row:['+this.options.rows+'] got Col:['+loadGrid[0].length+'] Row:['+loadGrid[0][0].length+']');
+        return;
+      }
+
+      this._data.grid = loadGrid;
+      this._start();
+
     }
   });
 })(jQuery);
