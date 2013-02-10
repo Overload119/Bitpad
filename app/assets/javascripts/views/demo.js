@@ -34,12 +34,14 @@ $(document).ready(function() {
 
     var percent = code.length/otherCode.length*100;
 
-    if($('#rows').val() === '10' && $('#cols').val() === '12') {
-      $('.save_code').text('Your BitPad save code:\n(compressed by ' + parseFloat(100-percent, 2) + '%)\n\n' + code + '\n\nShare this BitPad: ' + window.location.origin + '/demo?load=' + code);
-    } else {
-      $('.save_code').text('Your BitPad save code:\n(compressed by ' + parseFloat(100-percent, 2) + '%)\n\n' + code);
-    }
+    var t = 'Your BitPad save code:\n\n';
+    t += code;
+    t += '\n\n';
+    t += 'BitPad size: ' + code.length + '\n';
+    t += 'Image file size: ' + otherCode.length;
+    t += '\n\nBitPad saved ' + (otherCode.length - code.length) + ' bytes, a compression of ' + parseFloat(100-percent, 2) + '%.';
 
+    $('.save_code').val(t);
     $('.save_code').hide().fadeIn(500);
   });
 
@@ -60,7 +62,7 @@ $(document).ready(function() {
         $('#scale').val('1');
       }
     }
-    catch(e) { 
+    catch(e) {
       scale = 1.0
       $('#scale').val('1.0');
     }

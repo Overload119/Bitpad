@@ -7,24 +7,24 @@ $(document).ready(function() {
   $('#editor').attr('height', height);
 
   $('#editor').bitpad({
-    columns: 12,
-    rows: 10
+    columns: 30,
+    rows: 30
   });
 
   $('#new').click(function() {
-    var uri = $('#editor').bitpad('save');    
+    var uri = $('#editor').bitpad('save');
     animation_stack.push(uri);
     $('.main_editor .prev img').attr('src', uri);
     $('#editor').bitpad('clear');
   });
 
   $('#copy').click(function() {
-    var uri = $('#editor').bitpad('save');    
+    var uri = $('#editor').bitpad('save');
     animation_stack.push(uri);
     $('.main_editor .prev img').attr('src', uri);
   });
 
-  $('.preview_button').click(function() {    
+  $('.preview_button').click(function() {
     $('.overlay').show();
 
     var c = 0;
@@ -43,7 +43,7 @@ $(document).ready(function() {
       $('.overlay').off(event);
     });
 
-    
+
   });
 });
 
